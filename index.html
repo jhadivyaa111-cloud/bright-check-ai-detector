@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fff8f0">
+  <title>BrightCheck — AI Text Detector</title>
+  <meta name="description" content="A friendly AI-writing analysis demo with clear signals and an easy-to-use interface.">
+  <style>
+    :root {
+      --ink:#28264a; --muted:#716f8c; --purple:#7565e8; --pink:#ff8db3;
+      --yellow:#ffd96a; --mint:#a8ead5; --sky:#a8dfff; --paper:#fffdf9;
+      --line:#ece8fa; --shadow:0 18px 50px rgba(80,65,150,.12);
+    }
+    * { box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body {
+      margin:0; color:var(--ink); font-family: ui-rounded, "Nunito", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(circle at 7% 8%, rgba(255,217,106,.26), transparent 23rem),
+        radial-gradient(circle at 95% 22%, rgba(168,223,255,.34), transparent 25rem),
+        #fff8f0;
+    }
+    button, textarea { font:inherit }
+    button { cursor:pointer }
+    .wrap { width:min(1120px, calc(100% - 36px)); margin:auto }
+    header { padding:22px 0 }
+    .nav { display:flex; align-items:center; justify-content:space-between; gap:18px }
+    .brand { display:flex; align-items:center; gap:10px; font-size:1.22rem; font-weight:900; letter-spacing:-.04em }
+    .brand-mark { width:42px;height:42px;border-radius:15px;background:var(--purple);display:grid;place-items:center;box-shadow:0 8px 18px #7565e844; transform:rotate(-5deg) }
+    .brand-mark svg { width:27px;height:27px }
+    .nav-right { display:flex;align-items:center;gap:14px;color:var(--muted);font-size:.92rem }
+    .pill { padding:8px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);font-weight:750;color:#6256ca }
+    .hero { padding:38px 0 30px; display:grid;grid-template-columns:1.1fr .9fr;align-items:center;gap:28px }
+    .eyebrow { display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 13px;color:#675bc8;font-weight:800;font-size:.84rem;box-shadow:0 5px 18px #6d5caa0b }
+    .spark { color:#ffae36;font-size:1.1rem }
+    h1 { font-size:clamp(2.65rem,6vw,4.7rem);line-height:.99;letter-spacing:-.065em;margin:19px 0 18px;max-width:650px }
+    h1 span { color:var(--purple);position:relative;white-space:nowrap }
+    h1 span:after { content:"";position:absolute;left:0;right:0;bottom:-5px;height:9px;border-radius:50%;background:var(--yellow);z-index:-1;transform:rotate(-2deg) }
+    .hero p { font-size:1.08rem;line-height:1.7;color:var(--muted);max-width:540px;margin:0 }
+    .hero-actions { display:flex;flex-wrap:wrap;gap:12px;margin-top:25px }
+    .btn { border:0;border-radius:15px;padding:13px 19px;font-weight:850;transition:transform .18s,box-shadow .18s;display:inline-flex;align-items:center;justify-content:center;gap:8px }
+    .btn:hover { transform:translateY(-2px) }
+    .btn-primary { background:var(--purple);color:white;box-shadow:0 9px 22px #7565e844 }
+    .btn-secondary { background:#fff;color:var(--ink);border:1px solid var(--line) }
+    .art { min-height:320px;position:relative;display:grid;place-items:center }
+    .art-blob { position:absolute;width:min(355px,90%);aspect-ratio:1;border-radius:42% 58% 62% 38% / 45% 42% 58% 55%;background:linear-gradient(135deg,#e5deff,#d7f4ff);animation:morph 9s ease-in-out infinite }
+    .mascot { width:min(330px,86%);position:relative;filter:drop-shadow(0 20px 15px #6856aa20);animation:bob 4s ease-in-out infinite }
+    .float { position:absolute;display:grid;place-items:center;border:1px solid #ffffffc9;background:#ffffffdf;backdrop-filter:blur(8px);box-shadow:var(--shadow);border-radius:18px;padding:12px 15px;font-weight:850;animation:bob 4s ease-in-out infinite }
+    .float.one { top:28px;left:0;transform:rotate(-6deg);color:#5b50c2 }
+    .float.two { right:0;bottom:38px;transform:rotate(5deg);animation-delay:-1.6s;color:#269b7a }
+    @keyframes bob { 0%,100%{translate:0 0}50%{translate:0 -10px} }
+    @keyframes morph { 0%,100%{border-radius:42% 58% 62% 38% / 45% 42% 58% 55%;transform:rotate(0)}50%{border-radius:58% 42% 40% 60% / 52% 60% 40% 48%;transform:rotate(7deg)} }
+    .main { padding:18px 0 70px }
+    .detector { display:grid;grid-template-columns:1.35fr .65fr;gap:18px;align-items:stretch }
+    .panel { background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:25px;padding:23px;box-shadow:var(--shadow) }
+    .panel-heading { display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px }
+    h2 { margin:0;font-size:1.28rem;letter-spacing:-.035em }
+    .sub { color:var(--muted);font-size:.9rem;margin-top:6px }
+    .counter { font-size:.84rem;color:var(--muted);font-weight:750;white-space:nowrap }
+    textarea { display:block;width:100%;min-height:255px;resize:vertical;border:1.5px solid #e9e5f7;border-radius:18px;padding:18px;background:#fffefa;color:var(--ink);line-height:1.65;outline:none;transition:border .2s,box-shadow .2s }
+    textarea:focus { border-color:#9b8ff4;box-shadow:0 0 0 4px #7565e81a }
+    textarea::placeholder { color:#aaa7bf }
+    .text-tools { display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap }
+    .text-btn { border:0;background:transparent;color:#7165d6;font-weight:800;padding:8px 0 }
+    .text-btn:hover { text-decoration:underline }
+    .primary-wide { width:100%;margin-top:17px;padding:15px;border-radius:16px;font-size:1rem }
+    .note { color:var(--muted);font-size:.78rem;line-height:1.5;margin:12px 2px 0 }
+    .result-panel { display:flex;flex-direction:column;min-height:100% }
+    .result-top { display:flex;align-items:center;gap:12px }
+    .result-icon { width:47px;height:47px;display:grid;place-items:center;border-radius:16px;background:#f0edff;font-size:1.4rem }
+    .result-title { font-weight:900;font-size:1.1rem }
+    .status { font-size:.8rem;color:var(--muted);margin-top:4px }
+    .score-area { display:grid;place-items:center;padding:26px 0 20px }
+    .ring { --score:0; width:156px;height:156px;border-radius:50%;background:conic-gradient(var(--purple) calc(var(--score)*1%),#f0edfb 0);display:grid;place-items:center;position:relative;transition:background 1s }
+    .ring:before { content:"";position:absolute;inset:11px;background:#fff;border-radius:50% }
+    .ring-content { z-index:1;text-align:center }
+    .score { font-size:2.5rem;font-weight:950;letter-spacing:-.07em;line-height:1 }
+    .score-label { font-size:.78rem;color:var(--muted);font-weight:800;margin-top:7px }
+    .result-desc { font-size:.92rem;line-height:1.6;color:var(--muted);text-align:center;min-height:58px }
+    .bar-list { display:grid;gap:14px;margin-top:16px }
+    .bar-label { display:flex;justify-content:space-between;font-size:.83rem;font-weight:800;margin-bottom:7px }
+    .bar-track { height:8px;background:#f0edfb;border-radius:99px;overflow:hidden }
+    .bar-fill { height:100%;width:0;background:linear-gradient(90deg,#a59af7,#7565e8);border-radius:99px;transition:width .8s }
+    .empty-hint { margin-top:auto;padding:15px;background:#fff9e8;border:1px dashed #f3d783;border-radius:16px;color:#77652d;font-size:.84rem;line-height:1.5 }
+    .features { display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px }
+    .feature { background:#ffffffb8;border:1px solid var(--line);border-radius:21px;padding:20px }
+    .feature-icon { width:43px;height:43px;display:grid;place-items:center;border-radius:14px;font-size:1.25rem;margin-bottom:14px }
+    .feature:nth-child(1) .feature-icon { background:#fff0b8 }
+    .feature:nth-child(2) .feature-icon { background:#d9f8ec }
+    .feature:nth-child(3) .feature-icon { background:#ffe0eb }
+    .feature h3 { margin:0 0 7px;font-size:1rem }
+    .feature p { margin:0;color:var(--muted);font-size:.88rem;line-height:1.6 }
+    .disclaimer { margin-top:22px;padding:16px 18px;border-radius:17px;background:#f0edff;color:#5f56a7;font-size:.87rem;line-height:1.6 }
+    footer { border-top:1px solid var(--line);padding:24px 0 32px;color:var(--muted);font-size:.84rem }
+    .footer-inner { display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap }
+    .toast { position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:12px 17px;border-radius:14px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.25s;z-index:10;font-size:.9rem }
+    .toast.show { opacity:1;transform:translate(-50%,0) }
+    @media(max-width:820px) {
+      .hero { grid-template-columns:1fr; padding-top:22px;gap:5px }
+      .hero-copy { text-align:center }
+      .hero p { margin:auto }
+      .hero-actions { justify-content:center }
+      .art { min-height:290px }
+      .mascot { width:270px }
+      .detector { grid-template-columns:1fr }
+      .result-panel { min-height:unset }
+      .empty-hint { margin-top:20px }
+    }
+    @media(max-width:560px) {
+      .wrap { width:min(100% - 24px,1120px) }
+      header { padding:14px 0 }
+      .nav-right .nav-label { display:none }
+      h1 { font-size:2.8rem }
+      .hero { padding-top:18px }
+      .art { min-height:245px }
+      .mascot { width:235px }
+      .float { font-size:.78rem;padding:9px 11px }
+      .float.one { top:15px }
+      .float.two { bottom:22px }
+      .panel { padding:17px;border-radius:21px }
+      textarea { min-height:220px;padding:14px }
+      .features { grid-template-columns:1fr }
+      .panel-heading { align-items:flex-start }
+    }
+    @media(prefers-reduced-motion:reduce) {
+      *,*::before,*::after { animation:none!important;scroll-behavior:auto!important;transition:none!important }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none"><path d="M7 17.5 13 23 25 9" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="25" cy="8" r="3" fill="#FFD96A"/></svg>
+        </div>
+        BrightCheck
+      </div>
+      <div class="nav-right"><span class="nav-label">A little clarity for your writing</span><span class="pill">✦ Demo version</span></div>
+    </div>
+  </header>
+
+  <section class="wrap hero">
+    <div class="hero-copy">
+      <div class="eyebrow"><span class="spark">✦</span> YOUR FRIENDLY WRITING COMPANION</div>
+      <h1>Is it human<br>or <span>AI-written?</span></h1>
+      <p>Explore writing patterns in seconds. Paste your text to get a simple signal breakdown in a bright, distraction-free space.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" id="tryBtn">Try a sample <span aria-hidden="true">↘</span></button>
+        <button class="btn btn-secondary" id="jumpBtn">Check my text</button>
+      </div>
+    </div>
+    <div class="art" aria-label="Friendly cartoon robot illustration">
+      <div class="art-blob"></div>
+      <div class="float one">✦ Curious, not judgemental</div>
+      <div class="float two">✓ Easy-to-read insights</div>
+      <svg class="mascot" viewBox="0 0 360 340" role="img" aria-label="Cute smiling purple robot holding a pencil">
+        <ellipse cx="180" cy="304" rx="104" ry="17" fill="#6F5BC7" opacity=".12"/>
+        <path d="M114 244 93 281Q89 290 100 294L133 304 153 260" fill="#8D7CF0" stroke="#5145AA" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M222 244 243 281Q247 290 236 294L203 304 183 260" fill="#8D7CF0" stroke="#5145AA" stroke-width="4" stroke-linejoin="round"/>
+        <rect x="91" y="74" width="178" height="177" rx="52" fill="#9A8AF7" stroke="#5145AA" stroke-width="5"/>
+        <rect x="109" y="95" width="142" height="119" rx="37" fill="#F9F7FF"/>
+        <path d="M180 73V53" stroke="#5145AA" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="180" cy="43" r="13" fill="#FFD96A" stroke="#5145AA" stroke-width="4"/>
+        <circle cx="144" cy="145" r="7" fill="#5145AA"/><circle cx="216" cy="145" r="7" fill="#5145AA"/>
+        <path d="M151 169Q180 197 209 169" fill="none" stroke="#5145AA" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="126" cy="163" rx="10" ry="6" fill="#FF9EBB" opacity=".8"/><ellipse cx="234" cy="163" rx="10" ry="6" fill="#FF9EBB" opacity=".8"/>
+        <path d="M91 153 65 163Q54 169 61 181L75 204Q82 214 94 205L112 190" fill="#9A8AF7" stroke="#5145AA" stroke-width="5" stroke-linejoin="round"/>
+        <path d="M269 153 295 163Q306 169 299 181L285 204Q278 214 266 205L248 190" fill="#9A8AF7" stroke="#5145AA" stroke-width="5" stroke-linejoin="round"/>
+        <rect x="124" y="225" width="112" height="45" rx="20" fill="#FFD96A" stroke="#5145AA" stroke-width="4"/>
+        <path d="M145 246H215" stroke="#5145AA" stroke-width="4" stroke-linecap="round"/>
+        <path d="M250 218 282 190 292 201 260 230Z" fill="#FF8DB3" stroke="#5145AA" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M282 190 292 179 303 190 292 201Z" fill="#FFD96A" stroke="#5145AA" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M251 219 246 235 261 230" fill="#5145AA"/>
+        <path d="M62 81 67 94 80 99 67 104 62 117 57 104 44 99 57 94Z" fill="#FFD96A"/>
+        <path d="M292 94 296 104 306 108 296 112 292 122 288 112 278 108 288 104Z" fill="#FF8DB3"/>
+      </svg>
+    </div>
+  </section>
+
+  <main class="wrap main" id="checker">
+    <div class="detector">
+      <section class="panel">
+        <div class="panel-heading">
+          <div><h2>Paste your text</h2><div class="sub">Add a paragraph to explore its writing signals.</div></div>
+          <div class="counter" id="counter">0 words</div>
+        </div>
+        <textarea id="textInput" maxlength="12000" placeholder="Paste your writing here…&#10;&#10;Tip: a few complete sentences give the demo more patterns to inspect." aria-label="Text to analyze"></textarea>
+        <div class="text-tools">
+          <button class="text-btn" id="clearBtn">✕ Clear text</button>
+          <button class="text-btn" id="exampleBtn">Use example text ↗</button>
+        </div>
+        <button class="btn btn-primary primary-wide" id="analyzeBtn">✨ Analyse writing signals</button>
+        <p class="note">Your text is analysed locally in this browser demo. It is not sent to a server.</p>
+      </section>
+
+      <aside class="panel result-panel" aria-live="polite">
+        <div class="result-top">
+          <div class="result-icon" id="resultIcon">🔎</div>
+          <div><div class="result-title" id="resultTitle">Your insights await</div><div class="status" id="resultStatus">Ready when you are</div></div>
+        </div>
+        <div class="score-area">
+          <div class="ring" id="ring" style="--score:0">
+            <div class="ring-content"><div class="score" id="score">—</div><div class="score-label">AI-like signals</div></div>
+          </div>
+        </div>
+        <div class="result-desc" id="resultDesc">Paste some text and select “Analyse writing signals” to see a demo breakdown.</div>
+        <div class="bar-list">
+          <div><div class="bar-label"><span>Sentence uniformity</span><span id="uniformityVal">—</span></div><div class="bar-track"><div class="bar-fill" id="uniformityBar"></div></div></div>
+          <div><div class="bar-label"><span>Repeated phrasing</span><span id="repetitionVal">—</span></div><div class="bar-track"><div class="bar-fill" id="repetitionBar"></div></div></div>
+          <div><div class="bar-label"><span>Predictable wording</span><span id="predictVal">—</span></div><div class="bar-track"><div class="bar-fill" id="predictBar"></div></div></div>
+        </div>
+        <div class="empty-hint" id="hint">💡 <strong>Remember:</strong> writing style alone cannot reliably prove who wrote a text.</div>
+      </aside>
+    </div>
+
+    <section class="features" aria-label="How it works">
+      <article class="feature"><div class="feature-icon">🧩</div><h3>Pattern clues</h3><p>See simple indicators such as similar sentence lengths and repeated phrases.</p></article>
+      <article class="feature"><div class="feature-icon">🌱</div><h3>Made for learning</h3><p>Understand what the signals mean instead of getting a mysterious black-box verdict.</p></article>
+      <article class="feature"><div class="feature-icon">💛</div><h3>Fair by design</h3><p>Results are only rough signals. Human writing can look AI-like, and AI writing can look human.</p></article>
+    </section>
+
+    <div class="disclaimer"><strong>Important:</strong> BrightCheck is an educational prototype, not a validated AI detector. The percentage is a heuristic demo score, not the probability that a text was written by AI. Do not use it to accuse, grade, hire, or punish someone.</div>
+  </main>
+
+  <footer><div class="wrap footer-inner"><span>© 2026 BrightCheck · Student project prototype</span><span>Made with curiosity ✦ Not a definitive authorship test</span></div></footer>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    (() => {
+      const $ = id => document.getElementById(id);
+      const input = $('textInput');
+      const sample = "In today's rapidly evolving digital landscape, it is important to understand the impact of technology on our daily lives. Furthermore, technology provides numerous opportunities for growth and innovation. In conclusion, by embracing these changes, we can create a more efficient and sustainable future.";
+      let toastTimer;
+      function showToast(message) {
+        const toast = $('toast'); toast.textContent = message; toast.classList.add('show');
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+      }
+      function words(text) { return text.trim() ? text.trim().split(/\s+/).length : 0; }
+      function updateCounter() { $('counter').textContent = `${words(input.value)} words`; }
+      input.addEventListener('input', updateCounter);
+
+      function analyse(text) {
+        const sentences = (text.match(/[^.!?]+[.!?]?/g) || []).map(s => s.trim()).filter(Boolean);
+        const tokens = (text.toLowerCase().match(/[a-z']+/g) || []);
+        const sentenceLengths = sentences.map(s => words(s));
+        const avg = sentenceLengths.reduce((a,b)=>a+b,0) / Math.max(1,sentenceLengths.length);
+        const variance = sentenceLengths.reduce((a,n)=>a+Math.pow(n-avg,2),0) / Math.max(1,sentenceLengths.length);
+        const sd = Math.sqrt(variance);
+        const uniformity = Math.max(0, Math.min(100, Math.round(100 - (sd / Math.max(avg,1))*115)));
+        const counts = {};
+        for (let i=0;i<tokens.length-2;i++) {
+          const phrase = tokens.slice(i,i+3).join(' ');
+          counts[phrase] = (counts[phrase] || 0)+1;
+        }
+        const repeated = Object.values(counts).filter(n=>n>1).length;
+        const repetition = Math.min(100, Math.round(repeated / Math.max(tokens.length/10,1)*100));
+        const cues = ["furthermore","moreover","in conclusion","in today's","it is important to","plays a crucial role","delve","landscape","robust","comprehensive","overall","in summary","additionally"];
+        const cueCount = cues.reduce((n,c)=>n+(text.toLowerCase().includes(c)?1:0),0);
+        const predictable = Math.min(100, Math.round(cueCount / 4 * 100));
+        const score = Math.round(uniformity*.38 + repetition*.22 + predictable*.40);
+        return {score,uniformity,repetition,predictable,words:words(text),sentences:sentences.length};
+      }
+      function setBar(name, value) {
+        $(`${name}Val`).textContent = `${value}%`;
+        $(`${name}Bar`).style.width = `${value}%`;
+      }
+      function runAnalysis() {
+        const text = input.value.trim();
+        if (words(text) < 20) {
+          showToast('Please add at least 20 words for a more useful demo.');
+          input.focus(); return;
+        }
+        const r = analyse(text);
+        $('ring').style.setProperty('--score', r.score);
+        $('score').textContent = `${r.score}%`;
+        setBar('uniformity', r.uniformity);
+        setBar('repetition', r.repetition);
+        setBar('predict', r.predictable);
+        $('resultIcon').textContent = r.score >= 65 ? '🧠' : r.score >= 38 ? '📝' : '🌼';
+        $('resultTitle').textContent = r.score >= 65 ? 'More AI-like patterns' : r.score >= 38 ? 'A mixed pattern' : 'Fewer AI-like patterns';
+        $('resultStatus').textContent = `${r.words} words · ${r.sentences} sentences reviewed`;
+        $('resultDesc').textContent = r.score >= 65
+          ? 'This text has several patterns often associated with formulaic writing. That does not establish AI authorship.'
+          : r.score >= 38
+          ? 'Some patterns look formulaic, while others vary. These clues are not enough to determine who wrote it.'
+          : 'The text shows fewer of the simple formulaic signals this demo checks. That does not prove it was written by a person.';
+        $('hint').innerHTML = '💡 <strong>How to read this:</strong> the score combines sentence-length uniformity, repeated three-word phrases and a small list of predictable expressions. It is a heuristic, not a trained or validated AI detector.';
+        showToast('Analysis complete ✨');
+      }
+      function loadSample() { input.value = sample; updateCounter(); $('checker').scrollIntoView({behavior:'smooth'}); showToast('Sample text added'); }
+      $('analyzeBtn').addEventListener('click', runAnalysis);
+      $('tryBtn').addEventListener('click', loadSample);
+      $('exampleBtn').addEventListener('click', loadSample);
+      $('jumpBtn').addEventListener('click', () => { $('checker').scrollIntoView({behavior:'smooth'}); input.focus({preventScroll:true}); });
+      $('clearBtn').addEventListener('click', () => {
+        input.value = ''; updateCounter();
+        $('ring').style.setProperty('--score', 0); $('score').textContent = '—';
+        $('resultIcon').textContent = '🔎'; $('resultTitle').textContent = 'Your insights await';
+        $('resultStatus').textContent = 'Ready when you are';
+        $('resultDesc').textContent = 'Paste some text and select “Analyse writing signals” to see a demo breakdown.';
+        ['uniformity','repetition','predict'].forEach(n => { $(`${n}Val`).textContent='—'; $(`${n}Bar`).style.width='0'; });
+        $('hint').innerHTML = '💡 <strong>Remember:</strong> writing style alone cannot reliably prove who wrote a text.';
+        input.focus();
+      });
+      updateCounter();
+    })();
+  </script>
+</body>
+</html>
