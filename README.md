@@ -1,0 +1,1 @@
+# bright-check-ai-detector
